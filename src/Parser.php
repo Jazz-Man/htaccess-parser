@@ -1,5 +1,7 @@
 <?php
 
+declare( strict_types=1 );
+
 namespace JazzMan\HtaccessParser;
 
 use ArrayAccess;
@@ -16,9 +18,11 @@ use SplFileObject;
 
 class Parser {
 
-    public const IGNORE_WHITELINES = 2;
-    public const IGNORE_COMMENTS = 4;
-    public const AS_ARRAY = 8;
+    final public const IGNORE_WHITELINES = 2;
+
+    final public const IGNORE_COMMENTS = 4;
+
+    final public const AS_ARRAY = 8;
 
     protected array|ArrayAccess|null $container = null;
 
@@ -161,7 +165,7 @@ class Parser {
         if ( ! $file->isReadable() ) {
             $path = $file->getRealPath();
 
-            throw new Exception( ".htaccess file '{$path}'' is not readable" );
+            throw new Exception( sprintf('.htaccess file \'%s\'\' is not readable', $path) );
         }
 
         // Rewind file pointer
@@ -176,11 +180,7 @@ class Parser {
         $asArray = ( self::AS_ARRAY & $optFlags );
 
         // Container
-        if ( $asArray ) {
-            $htaccess = [];
-        } else {
-            $htaccess = ( null !== $this->container ) ? $this->container : new HtaccessContainer();
-        }
+        $htaccess = $asArray !== 0 ? [] : $this->container ?? new HtaccessContainer();
 
         // Dump file line by line into $htaccess
         while ( $file->valid() ) {
@@ -205,7 +205,7 @@ class Parser {
 
         $line = trim( $line );
 
-        return empty( $line );
+        return $line === '';
     }
 
     /**
@@ -356,6 +356,7 @@ class Parser {
             if ( null !== $parsedLine ) {
                 $block->addChild( $parsedLine );
             }
+
             $newLine = $file->getCurrentLine();
         }
 
@@ -381,11 +382,11 @@ class Parser {
         }
 
         if ( $this->isWhiteLine( $line ) ) {
-            return ( ! $ignoreWhiteLines ) ? $this->parseWhiteLine() : null;
+            return ( $ignoreWhiteLines === 0 ) ? $this->parseWhiteLine() : null;
         }
 
         if ( $this->isComment( $line ) ) {
-            return ( ! $ignoreComments ) ? $this->parseCommentLine( $line, ...$lineBreaks ) : null;
+            return ( $ignoreComments === 0 ) ? $this->parseCommentLine( $line, ...$lineBreaks ) : null;
         }
 
         if ( $this->isDirective( $line ) ) {
@@ -417,7 +418,7 @@ class Parser {
 
         if ( preg_match_all( $pattern, $str, $matches ) && isset( $matches[0] ) ) {
             foreach ( $matches[0] as $match ) {
-                $match = trim( $match );
+                $match = trim( (string) $match );
 
                 if ( '' !== $match ) {
                     $trimmedMatches[] = $match;
@@ -437,7 +438,7 @@ class Parser {
         if ( preg_match_all( $pattern, $line, $matches ) > 0 ) {
             array_walk( $matches[0], static function ( $val, $key ) use ( &$final ): void {
                 if ( null !== $val ) {
-                    $val = trim( $val );
+                    $val = trim( (string) $val );
                     $val = trim( $val, '<>' );
                     $final[ $key ] = $val;
                 }

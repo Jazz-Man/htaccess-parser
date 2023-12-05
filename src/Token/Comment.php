@@ -28,7 +28,7 @@ use Stringable;
  *
  * @copyright 2014 Estevão Soares dos Santos
  */
-class Comment extends BaseToken {
+class Comment extends BaseToken implements \Stringable {
 
     /**
          * Create a new Comment token.
@@ -89,7 +89,7 @@ class Comment extends BaseToken {
      *               which is a value of any type other than a resource
      */
     public function jsonSerialize(): mixed {
-        return $this->__toString();
+        return $this->text;
     }
 
     /**
@@ -113,7 +113,7 @@ class Comment extends BaseToken {
      * Get the Token's arguments.
      */
     public function getArguments(): array {
-        return [$this->getText()];
+        return [$this->text];
     }
 
     /**
@@ -134,6 +134,6 @@ class Comment extends BaseToken {
      * (or its arguments concatenated).
      */
     public function getValue(): string {
-        return $this->getText();
+        return $this->text;
     }
 }

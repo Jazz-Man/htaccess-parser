@@ -7,6 +7,7 @@
 
 namespace JazzMan\HtaccessParserTest\Token;
 
+use AllowDynamicProperties;
 use JazzMan\HtaccessParser\Token\Block;
 use JazzMan\HtaccessParser\Token\TokenInterface;
 use JazzMan\HtaccessParserTest\BaseTestCase;
@@ -22,6 +23,7 @@ use JazzMan\HtaccessParserTest\BaseTestCase;
  *
  * @internal
  */
+#[AllowDynamicProperties]
 final class BlockTest extends BaseTestCase {
 
     public string $blockName = 'SomeBlock';
@@ -98,20 +100,21 @@ final class BlockTest extends BaseTestCase {
      * @covers Block::addChild
      */
     public function testAddChild(): void {
-        $child = $this->getMockBuilder( TokenInterface::class )
+        $mock = $this->getMockBuilder( TokenInterface::class )
             ->getMock()
         ;
 
-        $this->testClass->addChild( $child );
+        $this->testClass->addChild( $mock );
 
-        self::assertContains( $child, $this->getProperty( 'children' ), 'Child token WAS NOT added successfully' );
+        self::assertContains( $mock, $this->getProperty( 'children' ), 'Child token WAS NOT added successfully' );
     }
 
     /**
      * @covers Block::removeChild
      */
     public function testRemoveChild(): void {
-        $child = $this->getMockBuilder( TokenInterface::class )
+
+        $mock = $this->getMockBuilder( TokenInterface::class )
             ->getMock()
         ;
 
@@ -119,37 +122,37 @@ final class BlockTest extends BaseTestCase {
             ->getMock()
         ;
 
-        $this->setProperty( 'children', [ $child ] );
+        $this->setProperty( 'children', [ $mock ] );
 
         // Test equal removal
-        $this->testClass->removeChild( $child );
-        self::assertNotContains( $child, $this->getProperty( 'children' ), 'Test EQUAL removal: Child was NOT removed from block but it should' );
+        $this->testClass->removeChild( $mock );
+        self::assertNotContains( $mock, $this->getProperty( 'children' ), 'Test EQUAL removal: Child was NOT removed from block but it should' );
 
-        $this->setProperty( 'children', [ $child ] );
+        $this->setProperty( 'children', [ $mock ] );
 
         // Test strict removal
         $this->testClass->removeChild( $notChild, true );
-        self::assertContains( $child, $this->getProperty( 'children' ), "Test STRICT removal: Child was removed from block but it shouldn't" );
+        self::assertContains( $mock, $this->getProperty( 'children' ), "Test STRICT removal: Child was removed from block but it shouldn't" );
 
         // Test loose removal
         $this->testClass->removeChild( $notChild, false );
-        self::assertNotContains( $child, $this->getProperty( 'children' ), 'Test LOOSE removal: Child was NOT removed from block but it should' );
+        self::assertNotContains( $mock, $this->getProperty( 'children' ), 'Test LOOSE removal: Child was NOT removed from block but it should' );
 
-        $this->setProperty( 'children', [ $child ] );
+        $this->setProperty( 'children', [ $mock ] );
 
         // Test loose removal 2
-        $child->foo = 'bar';
+        $mock->foo = 'bar';
         $this->testClass->removeChild( $notChild, false );
-        self::assertContains( $child, $this->getProperty( 'children' ), "Test LOOSE removal 2: Child was removed from block but it shouldn't" );
+        self::assertContains( $mock, $this->getProperty( 'children' ), "Test LOOSE removal 2: Child was removed from block but it shouldn't" );
 
         // Test loose removal 3
         $notChild->foo = 'bazinga';
         $this->testClass->removeChild( $notChild, false );
-        self::assertContains( $child, $this->getProperty( 'children' ), "Test LOOSE removal 3: Child was removed from block but it shouldn't" );
+        self::assertContains( $mock, $this->getProperty( 'children' ), "Test LOOSE removal 3: Child was removed from block but it shouldn't" );
 
         // Test loose removal 4
         $notChild->foo = 'bar';
         $this->testClass->removeChild( $notChild, false );
-        self::assertNotContains( $child, $this->getProperty( 'children' ), 'Test LOOSE removal 4: Child was NOT removed from block but it should' );
+        self::assertNotContains( $mock, $this->getProperty( 'children' ), 'Test LOOSE removal 4: Child was NOT removed from block but it should' );
     }
 }

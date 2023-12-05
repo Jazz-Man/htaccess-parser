@@ -7,6 +7,7 @@
 
 namespace JazzMan\HtaccessParserTest;
 
+use AllowDynamicProperties;
 use JazzMan\HtaccessParser\Parser;
 
 /**
@@ -20,6 +21,7 @@ use JazzMan\HtaccessParser\Parser;
  *
  * @internal
  */
+#[AllowDynamicProperties]
 final class ParserTest extends BaseTestCase {
 
     protected function setUp(): void {
@@ -141,13 +143,13 @@ final class ParserTest extends BaseTestCase {
         $line = '</otherBlock>';
         self::assertFalse(
             $method->invoke( $this->testClass, $line, $blockName ),
-            "Failed asserting that {$name} returns FALSE with {$line} (passing blockName {$blockName})"
+            sprintf('Failed asserting that %s returns FALSE with %s (passing blockName %s)', $name, $line, $blockName)
         );
 
-        $line = "</{$blockName}>";
+        $line = sprintf('</%s>', $blockName);
         self::assertTrue(
             $method->invoke( $this->testClass, $line, $blockName ),
-            "Failed asserting that {$name} returns TRUE with {$line} (passing blockName {$blockName})"
+            sprintf('Failed asserting that %s returns TRUE with %s (passing blockName %s)', $name, $line, $blockName)
         );
     }
 
@@ -164,15 +166,15 @@ final class ParserTest extends BaseTestCase {
 
         $line = '<myBlock>';
         $expArray = ['myBlock'];
-        self::assertSame( $expArray, $method->invoke( $this->testClass, $line ), "Block Regex failed for {$line}" );
+        self::assertSame( $expArray, $method->invoke( $this->testClass, $line ), sprintf('Block Regex failed for %s', $line) );
 
         $line1 = '<myBlock with args>';
         $expArray1 = ['myBlock', 'with', 'args'];
-        self::assertSame( $expArray1, $method->invoke( $this->testClass, $line1 ), "Block Regex failed for {$line1}" );
+        self::assertSame( $expArray1, $method->invoke( $this->testClass, $line1 ), sprintf('Block Regex failed for %s', $line1) );
 
         $line2 = '<myBlock "with args" several indeed "and quoted">';
         $expArray2 = ['myBlock', '"with args"', 'several', 'indeed', '"and quoted"'];
-        self::assertSame( $expArray2, $method->invoke( $this->testClass, $line2 ), "Block Regex failed for {$line2}" );
+        self::assertSame( $expArray2, $method->invoke( $this->testClass, $line2 ), sprintf('Block Regex failed for %s', $line2) );
     }
 
     /**
@@ -184,15 +186,15 @@ final class ParserTest extends BaseTestCase {
 
         $line = 'myDirective';
         $expArray = ['myDirective'];
-        self::assertSame( $expArray, $method->invoke( $this->testClass, $line ), "Directive Regex failed for line: '{$line}'" );
+        self::assertSame( $expArray, $method->invoke( $this->testClass, $line ), sprintf('Directive Regex failed for line: \'%s\'', $line) );
 
         $line1 = 'myDirective with args';
         $expArray1 = ['myDirective', 'with', 'args'];
-        self::assertSame( $expArray1, $method->invoke( $this->testClass, $line1 ), "Directive Regex failed for line: '{$line1}'" );
+        self::assertSame( $expArray1, $method->invoke( $this->testClass, $line1 ), sprintf('Directive Regex failed for line: \'%s\'', $line1) );
 
         $line2 = 'myDirective "with args" several indeed "and quoted"';
         $expArray2 = ['myDirective', '"with args"', 'several', 'indeed', '"and quoted"'];
-        self::assertSame( $expArray2, $method->invoke( $this->testClass, $line2 ), "Directive Regex failed for line: '{$line2}'" );
+        self::assertSame( $expArray2, $method->invoke( $this->testClass, $line2 ), sprintf('Directive Regex failed for line: \'%s\'', $line2) );
     }
 
     // /////////////////////////////////////////////////////////////////////////
@@ -208,12 +210,16 @@ final class ParserTest extends BaseTestCase {
 
         switch ( $bool ) {
             case 'TRUE':
-                $assertion = [$this, 'assertTrue'];
+                $assertion = function ($condition, string $message = '') : void {
+                    $this::assertTrue($condition, $message);
+                };
 
                 break;
 
             case 'FALSE':
-                $assertion = [$this, 'assertFalse'];
+                $assertion = function ($condition, string $message = '') : void {
+                    $this::assertFalse($condition, $message);
+                };
 
                 break;
 
@@ -227,7 +233,7 @@ final class ParserTest extends BaseTestCase {
             $assertion,
             [
                 $method->invokeArgs( $this->testClass, $args ),
-                "Failed asserting that {$name} returns {$bool} with {$line}",
+                sprintf('Failed asserting that %s returns %s with %s', $name, $bool, $line),
             ]
         );
     }

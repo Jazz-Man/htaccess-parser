@@ -20,6 +20,7 @@
 
 namespace JazzMan\HtaccessParserTest;
 
+use AllowDynamicProperties;
 use Exception;
 use InvalidArgumentException;
 use JazzMan\HtaccessParser\HtaccessContainer;
@@ -37,6 +38,7 @@ use PHPUnit\Framework\MockObject\MockObject;
  *
  * @property HtaccessContainer $testClass
  */
+#[AllowDynamicProperties]
 final class HtaccessContainerTest extends BaseTestCase {
 
     public TokenInterface $genericToken;
@@ -152,10 +154,10 @@ final class HtaccessContainerTest extends BaseTestCase {
         $array = $htaccess->getArrayCopy();
         $expArr = \array_slice( $array, $offset, $length, $presKeys );
 
-        $expObj = new HtaccessContainer( $expArr );
+        $htaccessContainer = new HtaccessContainer( $expArr );
 
         self::assertSame( $expArr, $htaccess->slice( $offset, $length, $presKeys, true ) );
-        self::assertEquals( $expObj, $htaccess->slice( $offset, $length, $presKeys ) );
+        self::assertEquals( $htaccessContainer, $htaccess->slice( $offset, $length, $presKeys ) );
     }
 
     /**
@@ -166,7 +168,7 @@ final class HtaccessContainerTest extends BaseTestCase {
         $tokenM2 = $this->createTokenMock( TokenInterface::TOKEN_BLOCK );
         $htaccess = $this->fillContainer( $this->testClass );
         $array = [$tokenM2, $tokenM2, $tokenM2];
-        $max = \count( $htaccess );
+        $max = is_countable($htaccess) ? \count( $htaccess ) : 0;
         $spliced = $htaccess->splice( 1, $max, $array );
 
         self::assertSame( $tokenM1, $htaccess[0] );
@@ -184,6 +186,7 @@ final class HtaccessContainerTest extends BaseTestCase {
         for ( $i = 0; $max - 1 > $i; ++$i ) {
             $expReturn[] = $tokenM1;
         }
+
         self::assertSame( $expReturn, $spliced );
     }
 
@@ -207,14 +210,15 @@ final class HtaccessContainerTest extends BaseTestCase {
         self::assertNotSame( $tokenM1, $htaccess[2], 'Failed asserting that TestToken is different from tokenM1' );
     }
 
-    protected function fillContainer( $htaccess = null, int $num = 6, bool $rand = false ) {
+    private function fillContainer( mixed $htaccess = null, int $num = 6, bool $rand = false )
+    {
         $htaccess = ( $htaccess ) ?: $this->testClass;
 
         for ( $i = 0; $i < $num; ++$i ) {
             if ( $rand ) {
                 try {
                     $htaccess[] = $this->createTokenMock( random_int( 0, 4 ) );
-                } catch ( Exception $e ) {
+                } catch ( Exception ) {
                 }
             } else {
                 $htaccess[] = $this->genericToken;
@@ -224,7 +228,7 @@ final class HtaccessContainerTest extends BaseTestCase {
         return $htaccess;
     }
 
-    protected function createTokenMock( ?int $type = null ): Block|Comment|Directive|MockObject|TokenInterface|WhiteLine {
+    private function createTokenMock( ?int $type = null ): Block|Comment|Directive|MockObject|TokenInterface|WhiteLine {
 
         if ( null === $type ) {
             return $this->getMockBuilder( TokenInterface::class )

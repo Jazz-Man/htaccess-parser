@@ -42,7 +42,7 @@ class SyntaxException extends \Exception {
 	 */
     public function __construct( int $lineNum, string $line, string $message = '', int $code = 0, ?\Exception $exception = null ) {
 
-        $message = "Parsing Error in line {$lineNum}: {$line}. {$message}";
+        $message = sprintf('Parsing Error in line %d: %s. %s', $lineNum, $line, $message);
 
         parent::__construct( $message, $code, $exception );
     }

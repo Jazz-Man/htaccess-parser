@@ -32,8 +32,11 @@ use Stringable;
 interface TokenInterface extends JsonSerializable {
 
     public const TOKEN_DIRECTIVE = 0;
+
     public const TOKEN_BLOCK = 1;
+
     public const TOKEN_COMMENT = 2;
+
     public const TOKEN_WHITELINE = 3;
 
     /**

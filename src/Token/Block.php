@@ -35,7 +35,7 @@ use Traversable;
  *
  * @copyright 2014 Estevão Soares dos Santos
  */
-class Block extends BaseToken implements ArrayAccess, Countable, IteratorAggregate {
+class Block extends BaseToken implements ArrayAccess, Countable, IteratorAggregate, \Stringable {
 
     /**
      * @var string[]
@@ -79,18 +79,19 @@ class Block extends BaseToken implements ArrayAccess, Countable, IteratorAggrega
         $str = '<'.$this->blockName;
 
         // Arguments list
-        foreach ( $this->arguments as $arg ) {
-            $str .= " {$arg}";
+        foreach ( $this->arguments as $argument ) {
+            $str .= sprintf(' %s', $argument);
         }
+
         $str .= '>'.PHP_EOL;
 
         // Children
         foreach ( $this->children as $child ) {
-            $str .= "{$ind}{$child}".PHP_EOL;
+            $str .= $ind . $child.PHP_EOL;
         }
 
         // Closing tag
-        $str .= "</{$this->blockName}>";
+        $str .= sprintf('</%s>', $this->blockName);
 
         return $str;
     }
@@ -142,7 +143,7 @@ class Block extends BaseToken implements ArrayAccess, Countable, IteratorAggrega
      * (or its arguments concatenated).
      */
     public function getValue(): string {
-        return implode( ' ', $this->getArguments() );
+        return implode( ' ', $this->arguments );
     }
 
     /**
@@ -179,8 +180,8 @@ class Block extends BaseToken implements ArrayAccess, Countable, IteratorAggrega
      *
      * @return $this
      */
-    public function addChild( TokenInterface $child ): static {
-        $this->children[] = $child;
+    public function addChild( TokenInterface $token ): static {
+        $this->children[] = $token;
 
         return $this;
     }
@@ -188,14 +189,14 @@ class Block extends BaseToken implements ArrayAccess, Countable, IteratorAggrega
     /**
      * Remove a child from this block.
      *
-     * @param TokenInterface $child  [required] The child to remove
+     * @param TokenInterface $token [required] The child to remove
      * @param bool           $strict [optional] Default true. If the comparison should be strict. A non strict comparsion
      *                               will remove a child if it has the same properties with the same values
      *
      * @return $this
      */
-    public function removeChild( TokenInterface $child, bool $strict = true ): static {
-        $index = array_search( $child, $this->children, $strict );
+    public function removeChild( TokenInterface $token, bool $strict = true ): static {
+        $index = array_search( $token, $this->children, $strict );
 
         if ( false !== $index ) {
             unset( $this->children[$index] );
@@ -263,7 +264,7 @@ class Block extends BaseToken implements ArrayAccess, Countable, IteratorAggrega
         }
 
         if ( ! $this->offsetExists( $offset ) ) {
-            throw new DomainException( "{$offset} is not set" );
+            throw new DomainException( sprintf('%s is not set', $offset) );
         }
 
         return $this->children[$offset];
@@ -304,6 +305,7 @@ class Block extends BaseToken implements ArrayAccess, Countable, IteratorAggrega
         if ( ! \is_scalar( $offset ) ) {
             throw new InvalidArgumentException( 'Offset must be a scalar' );
         }
+
         unset( $this->children[$offset] );
     }
 
@@ -333,7 +335,7 @@ class Block extends BaseToken implements ArrayAccess, Countable, IteratorAggrega
         ];
 
         foreach ( $this->children as $child ) {
-            if ( ! $child instanceof WhiteLine & ! $child instanceof Comment ) {
+            if ( (! $child instanceof WhiteLine & ! $child instanceof Comment) !== 0 ) {
                 $array['children'][$child->getName()] = $child->jsonSerialize();
             }
         }
@@ -368,8 +370,8 @@ class Block extends BaseToken implements ArrayAccess, Countable, IteratorAggrega
     public function toArray(): array {
         $array = [
             'type' => $this->getTokenType(),
-            'name' => $this->getName(),
-            'arguments' => $this->getArguments(),
+            'name' => $this->blockName,
+            'arguments' => $this->arguments,
             'children' => [],
         ];
 

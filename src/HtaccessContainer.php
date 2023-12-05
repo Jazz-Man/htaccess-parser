@@ -37,14 +37,11 @@ use JazzMan\HtaccessParser\Token\WhiteLine;
  *
  * @copyright 2014 Estevão Soares dos Santos
  */
-class HtaccessContainer extends BaseArrayObject implements HtaccessInterface {
-
+class HtaccessContainer extends BaseArrayObject implements HtaccessInterface, \Stringable
+{
     private int $indentation = 4;
-
     private bool $ignoreWhiteLines = false;
-
     private bool $ignoreComments = false;
-
     /**
      * Create a new HtaccessContainer.
      *
@@ -53,7 +50,6 @@ class HtaccessContainer extends BaseArrayObject implements HtaccessInterface {
     public function __construct( array $array = [] ) {
         parent::__construct( $array );
     }
-
     /**
      * Get a string representation of this ArrayObject.
      *
@@ -62,7 +58,6 @@ class HtaccessContainer extends BaseArrayObject implements HtaccessInterface {
     public function __toString(): string {
         return $this->txtSerialize();
     }
-
     /**
      * Set the indentation level.
      *
@@ -76,11 +71,9 @@ class HtaccessContainer extends BaseArrayObject implements HtaccessInterface {
 
         return $this;
     }
-
     public function isIgnoreComments(): bool {
         return $this->ignoreComments;
     }
-
     /**
      * @return $this
      */
@@ -89,11 +82,9 @@ class HtaccessContainer extends BaseArrayObject implements HtaccessInterface {
 
         return $this;
     }
-
     public function isIgnoreWhiteLines(): bool {
         return $this->ignoreWhiteLines;
     }
-
     /**
      * @return $this
      */
@@ -102,7 +93,6 @@ class HtaccessContainer extends BaseArrayObject implements HtaccessInterface {
 
         return $this;
     }
-
     /**
      * Search this object for a Token with a specific name and return the first match.
      *
@@ -126,17 +116,22 @@ class HtaccessContainer extends BaseArrayObject implements HtaccessInterface {
                     return $token;
                 }
             }
-
-            if ( $token instanceof Block && $token->hasChildren() && $deepSearch ) {
-                if ( $res = $this->deepSearch( $token, $name, $type ) ) {
-                    return $res;
-                }
+            if (!$token instanceof Block) {
+                continue;
+            }
+            if (!$token->hasChildren()) {
+                continue;
+            }
+            if (!$deepSearch) {
+                continue;
+            }
+            if ( $res = $this->deepSearch( $token, $name, $type ) ) {
+                return $res;
             }
         }
 
         return null;
     }
-
     /**
      * Search this object for a Token with specific name and return the index(key) of the first match.
      *
@@ -163,7 +158,6 @@ class HtaccessContainer extends BaseArrayObject implements HtaccessInterface {
 
         return null;
     }
-
     /**
      * Get a representation ready to be encoded with json_encoded.
      * Note: Whitelines and Comments are ignored and will not be included in the serialization.
@@ -181,14 +175,13 @@ class HtaccessContainer extends BaseArrayObject implements HtaccessInterface {
         $otp = [];
 
         foreach ( $array as $arr ) {
-            if ( ! $arr instanceof WhiteLine & ! $arr instanceof Comment ) {
+            if ( (! $arr instanceof WhiteLine & ! $arr instanceof Comment) !== 0 ) {
                 $otp[$arr->getName()] = $arr;
             }
         }
 
         return $otp;
     }
-
     /**
      * Returns a representation of the htaccess, ready for inclusion in a file.
      *
@@ -203,9 +196,9 @@ class HtaccessContainer extends BaseArrayObject implements HtaccessInterface {
         $array = $this->getArrayCopy();
         $otp = '';
 
-        $this->indentation = ( null === $indentation ) ? $this->indentation : $indentation;
-        $ignoreWhiteLines = ( null === $ignoreWhiteLines ) ? $this->ignoreWhiteLines : $ignoreWhiteLines;
-        $ignoreComments = ( null === $ignoreComments ) ? $this->ignoreComments : $ignoreComments;
+        $this->indentation = $indentation ?? $this->indentation;
+        $ignoreWhiteLines ??= $this->ignoreWhiteLines;
+        $ignoreComments ??= $this->ignoreComments;
 
         foreach ( $array as $num => $token ) {
             $otp .= $this->txtSerializeToken( $token, 0, $ignoreWhiteLines, $ignoreComments );
@@ -218,7 +211,6 @@ class HtaccessContainer extends BaseArrayObject implements HtaccessInterface {
 
         return $otp;
     }
-
     /**
      * Returns the sequence of elements as specified by the offset and length parameters.
      *
@@ -244,7 +236,6 @@ class HtaccessContainer extends BaseArrayObject implements HtaccessInterface {
 
         return $asArray ? $newArray : new self( $newArray );
     }
-
     /**
      * @param int            $offset [required] If offset is positive then the token will be inserted at that offset from the
      *                               beginning. If offset is negative then it starts that far from the end of the input
@@ -259,7 +250,6 @@ class HtaccessContainer extends BaseArrayObject implements HtaccessInterface {
 
         return $this;
     }
-
     /**
      * Removes the elements designated by offset and length, and replaces them with the elements of the replacement
      * array, if supplied.
@@ -286,7 +276,6 @@ class HtaccessContainer extends BaseArrayObject implements HtaccessInterface {
 
         return $spliced;
     }
-
     /**
      * @inheritDocs
      *
@@ -302,11 +291,11 @@ class HtaccessContainer extends BaseArrayObject implements HtaccessInterface {
         if ( ! $value instanceof TokenInterface ) {
             throw new InvalidArgumentException( 'TokenInterface', 1 );
         }
+
         parent::offsetSet( $offset, $value );
     }
-
-    private function deepSearch( Block $parent, $name, $type ) {
-        foreach ( $parent as $token ) {
+    private function deepSearch( Block $block, $name, $type ) {
+        foreach ( $block as $token ) {
             if ( fnmatch( $name, $token->getName() ) ) {
                 if ( null === $type ) {
                     return $token;
@@ -316,17 +305,20 @@ class HtaccessContainer extends BaseArrayObject implements HtaccessInterface {
                     return $token;
                 }
             }
-
-            if ( $token instanceof Block && $token->hasChildren() ) {
-                if ( $res = $this->deepSearch( $token, $name, $type ) ) {
-                    return $res;
-                }
+            if (!$token instanceof Block) {
+                continue;
             }
+            if (!$token->hasChildren()) {
+                continue;
+            }
+            if (!($res = $this->deepSearch( $token, $name, $type ))) {
+                continue;
+            }
+            return $res;
         }
 
         return null;
     }
-
     private function txtSerializeToken( TokenInterface $token, int $indentation, bool $ignoreWhiteLines, bool $ignoreComments ): string {
 
         $ind = str_repeat( ' ', $indentation );
@@ -349,7 +341,6 @@ class HtaccessContainer extends BaseArrayObject implements HtaccessInterface {
         return $ind.$token.PHP_EOL;
 
     }
-
     private function blockToString( Block $block, int $indentation, bool $ignoreWhiteLines, bool $ignoreComments ): string {
         $otp = '';
 
@@ -361,8 +352,9 @@ class HtaccessContainer extends BaseArrayObject implements HtaccessInterface {
 
         // Arguments list
         foreach ( $block->getArguments() as $arg ) {
-            $otp .= " {$arg}";
+            $otp .= sprintf(' %s', $arg);
         }
+
         $otp .= '>'.PHP_EOL;
 
         if ( $block->hasChildren() ) {

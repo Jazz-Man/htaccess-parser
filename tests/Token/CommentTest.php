@@ -7,9 +7,11 @@
 
 namespace JazzMan\HtaccessParserTest\Token;
 
+use AllowDynamicProperties;
 use JazzMan\HtaccessParser\Token\Comment;
 use JazzMan\HtaccessParser\Token\TokenInterface;
 use JazzMan\HtaccessParserTest\BaseTestCase;
+use JsonException;
 
 /**
  * Class CommentTest.
@@ -22,6 +24,7 @@ use JazzMan\HtaccessParserTest\BaseTestCase;
  *
  * @internal
  */
+#[AllowDynamicProperties]
 final class CommentTest extends BaseTestCase {
 
     protected function setUp(): void {
@@ -47,6 +50,7 @@ final class CommentTest extends BaseTestCase {
     /**
      * @covers Comment::__toString
      * @covers Comment::jsonSerialize
+     * @throws JsonException
      */
     public function testJsonSerializeAnToString(): void {
         $text = 'This is a comment';
@@ -54,7 +58,7 @@ final class CommentTest extends BaseTestCase {
 
         $expectedOtp = json_encode( $text );
         self::assertSame( $text, (string) $this->testClass, 'Casting Comment to string does not produce the expected value' );
-        self::assertSame( $expectedOtp, json_encode( $this->testClass ) );
+        self::assertSame( $expectedOtp, json_encode( $this->testClass, JSON_THROW_ON_ERROR ) );
 
     }
 

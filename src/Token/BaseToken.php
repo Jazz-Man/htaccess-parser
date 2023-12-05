@@ -37,7 +37,7 @@ abstract class BaseToken implements TokenInterface {
      * Check if this Token spawns across multiple lines.
      */
     public function isMultiLine(): bool {
-        return ! empty( $this->lineBreaks );
+        return $this->lineBreaks !== [];
     }
 
     /**
@@ -57,9 +57,9 @@ abstract class BaseToken implements TokenInterface {
      * @return $this
      */
     public function setLineBreaks( int ...$lineBreaks ): static {
-        foreach ( $lineBreaks as $lb ) {
+        foreach ( $lineBreaks as $lineBreak ) {
 
-            $this->lineBreaks[] = $lb;
+            $this->lineBreaks[] = $lineBreak;
         }
 
         return $this;

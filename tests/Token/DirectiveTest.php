@@ -7,9 +7,11 @@
 
 namespace JazzMan\HtaccessParserTest\Token;
 
+use AllowDynamicProperties;
 use JazzMan\HtaccessParser\Token\Directive;
 use JazzMan\HtaccessParser\Token\TokenInterface;
 use JazzMan\HtaccessParserTest\BaseTestCase;
+use JsonException;
 
 
 /**
@@ -23,6 +25,7 @@ use JazzMan\HtaccessParserTest\BaseTestCase;
  *
  * @internal
  */
+#[AllowDynamicProperties]
 final class DirectiveTest extends BaseTestCase {
 
     public string $key = 'myDirective';
@@ -58,13 +61,14 @@ final class DirectiveTest extends BaseTestCase {
 
     /**
      * @covers Directive::jsonSerialize
+     * @throws JsonException
      */
     public function testJsonSerialize(): void {
         $args = ['foo', 'bar', 'baz'];
         $this->setProperty( 'arguments', $args );
 
         $expectedOtp = json_encode( $args );
-        self::assertSame( $expectedOtp, json_encode( $this->testClass ) );
+        self::assertSame( $expectedOtp, json_encode( $this->testClass, JSON_THROW_ON_ERROR ) );
 
     }
 
@@ -75,7 +79,7 @@ final class DirectiveTest extends BaseTestCase {
         $args = ['foo', 'bar', 'baz'];
         $this->setProperty( 'arguments', $args );
 
-        $expectedOtp = "{$this->key} foo bar baz";
+        $expectedOtp = sprintf('%s foo bar baz', $this->key);
         self::assertSame( $expectedOtp, (string) $this->testClass, 'Casting Directive to string does not produce the expected value' );
     }
 

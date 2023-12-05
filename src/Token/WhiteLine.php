@@ -28,7 +28,7 @@ use Stringable;
  *
  * @copyright 2014 Estevão Soares dos Santos
  */
-class WhiteLine extends BaseToken {
+class WhiteLine extends BaseToken implements \Stringable {
 
     /**
          * Get a string representation of the Token.

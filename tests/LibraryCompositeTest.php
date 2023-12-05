@@ -20,6 +20,7 @@
 
 namespace JazzMan\HtaccessParserTest;
 
+use AllowDynamicProperties;
 use JazzMan\HtaccessParser\Parser;
 use SplFileObject;
 
@@ -30,6 +31,7 @@ use SplFileObject;
  *
  * @property Parser $testClass
  */
+#[AllowDynamicProperties]
 final class LibraryCompositeTest extends BaseTestCase {
 
     public array $testCase = [];
@@ -42,14 +44,14 @@ final class LibraryCompositeTest extends BaseTestCase {
         $basePath = __DIR__.'/resources/testcase';
 
         for ( $i = 1; $i <= $max; ++$i ) {
-            $fname = "{$basePath}{$i}";
+            $fname = sprintf('%s%d', $basePath, $i);
             $this->testCase[] = [
-                'file' => new SplFileObject( "{$fname}/htaccess" ),
+                'file' => new SplFileObject( sprintf('%s/htaccess', $fname) ),
                 'txt' => [
-                    0 => "{$fname}/txt/normal.txt",
-                    Parser::IGNORE_COMMENTS => "{$fname}/txt/no_comments.txt",
-                    Parser::IGNORE_WHITELINES => "{$fname}/txt/no_whitelines.txt",
-                    Parser::IGNORE_COMMENTS | Parser::IGNORE_WHITELINES => "{$fname}/txt/no_comments_no_whitelines.txt",
+                    0 => sprintf('%s/txt/normal.txt', $fname),
+                    Parser::IGNORE_COMMENTS => sprintf('%s/txt/no_comments.txt', $fname),
+                    Parser::IGNORE_WHITELINES => sprintf('%s/txt/no_whitelines.txt', $fname),
+                    Parser::IGNORE_COMMENTS | Parser::IGNORE_WHITELINES => sprintf('%s/txt/no_comments_no_whitelines.txt', $fname),
                 ],
             ];
         }
@@ -76,7 +78,7 @@ final class LibraryCompositeTest extends BaseTestCase {
              */
             foreach ( $this->testCase[$i]['txt'] as $type => $filename ) {
                 $parsed = $this->testClass->setMode( $type )->parse();
-                self::assertSame( file_get_contents( $filename ), $parsed->txtSerialize(), "Failed test (PARSE MODIFIED) with {$filename}" );
+                self::assertSame( file_get_contents( $filename ), $parsed->txtSerialize(), sprintf('Failed test (PARSE MODIFIED) with %s', $filename) );
 
                 $parsed = $this->testClass->setMode( 0 )->parse();
                 self::assertSame(
@@ -86,7 +88,7 @@ final class LibraryCompositeTest extends BaseTestCase {
                         Parser::IGNORE_WHITELINES & $type,
                         Parser::IGNORE_COMMENTS & $type
                     ),
-                    "Failed test with {$filename}"
+                    sprintf('Failed test with %s', $filename)
                 );
             }
         }

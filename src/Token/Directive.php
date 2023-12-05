@@ -31,7 +31,7 @@ use Stringable;
  *
  * @copyright 2014 Estevão Soares dos Santos
  */
-class Directive extends BaseToken {
+class Directive extends BaseToken implements \Stringable {
 
     private array $arguments = [];
 
@@ -41,20 +41,20 @@ class Directive extends BaseToken {
      */
     public function __construct( private ?string $name = null, string|Stringable ...$arguments ) {
 
-        foreach ( $arguments as $arg ) {
+        foreach ( $arguments as $argument ) {
 
-            $this->arguments[] = $arg;
+            $this->arguments[] = $argument;
         }
     }
 
     public function __toString(): string {
-        $str = $this->getName();
+        $str = $this->name;
 
-        foreach ( $this->arguments as $arg ) {
-            $str .= " {$arg}";
+        foreach ( $this->arguments as $argument ) {
+            $str .= sprintf(' %s', $argument);
         }
 
-        return $str;
+        return (string) $str;
     }
 
     /**
@@ -88,9 +88,9 @@ class Directive extends BaseToken {
      * @return $this
      */
     public function setArguments( string|Stringable ...$arguments ): static {
-        foreach ( $arguments as $arg ) {
+        foreach ( $arguments as $argument ) {
 
-            $this->addArgument( $arg );
+            $this->addArgument( $argument );
         }
 
         return $this;
@@ -108,7 +108,7 @@ class Directive extends BaseToken {
 
         // escape arguments with spaces
         if ( str_contains( $arg, ' ' ) && ( ! str_contains( $arg, '"' ) ) ) {
-            $arg = "\"{$arg}\"";
+            $arg = sprintf('"%s"', $arg);
         }
 
         if ( \in_array( $arg, $this->arguments, true ) && $unique ) {
@@ -158,8 +158,8 @@ class Directive extends BaseToken {
     public function toArray(): array {
         return [
             'type' => $this->getTokenType(),
-            'name' => $this->getName(),
-            'arguments' => $this->getArguments(),
+            'name' => $this->name,
+            'arguments' => $this->arguments,
         ];
     }
 
@@ -168,6 +168,6 @@ class Directive extends BaseToken {
      * (or its arguments concatenated).
      */
     public function getValue(): string {
-        return implode( ' ', $this->getArguments() );
+        return implode( ' ', $this->arguments );
     }
 }
