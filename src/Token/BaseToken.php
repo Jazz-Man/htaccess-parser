@@ -1,7 +1,10 @@
 <?php
+
+declare( strict_types=1 );
+
 /**
  * -- PHP Htaccess Parser --
- * BaseToken.php created at 03-12-2014
+ * BaseToken.php created at 03-12-2014.
  *
  * Copyright 2014 Estevão Soares dos Santos
  *
@@ -16,59 +19,46 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- **/
+ */
 
-namespace Tivie\HtaccessParser\Token;
-
-
-use Tivie\HtaccessParser\Exception\DomainException;
-use Tivie\HtaccessParser\Exception\InvalidArgumentException;
+namespace JazzMan\HtaccessParser\Token;
 
 /**
  * Class BaseToken
- * An abstract class for Tokens to extend
+ * An abstract class for Tokens to extend.
  *
- * @package Tivie\HtaccessParser\Token
  * @copyright 2014 Estevão Soares dos Santos
  */
-abstract class BaseToken implements TokenInterface
-{
+abstract class BaseToken implements TokenInterface {
 
-    protected $lineBreaks = array();
+    protected array $lineBreaks = [];
 
     /**
-     * Check if this Token spawns across multiple lines
-     *
-     * @return bool
+     * Check if this Token spawns across multiple lines.
      */
-    public function isMultiLine()
-    {
-        return (!empty($this->lineBreaks));
+    public function isMultiLine(): bool {
+        return ! empty( $this->lineBreaks );
     }
 
     /**
-     * Get the line breaks
+     * Get the line breaks.
      *
      * @return int[]
      */
-    public function getLineBreaks()
-    {
+    public function getLineBreaks(): array {
         return $this->lineBreaks;
     }
 
     /**
-     * Set the line breaks
+     * Set the line breaks.
      *
      * @param int[] $lineBreaks Array of integers
-     * @throws DomainException
+     *
      * @return $this
      */
-    public function setLineBreaks(array $lineBreaks)
-    {
-        foreach ($lineBreaks as $lb) {
-            if (!is_int($lb)) {
-                throw new DomainException("lineBreaks array is expected to contain only integers");
-            }
+    public function setLineBreaks( int ...$lineBreaks ): static {
+        foreach ( $lineBreaks as $lb ) {
+
             $this->lineBreaks[] = $lb;
         }
 
@@ -76,17 +66,11 @@ abstract class BaseToken implements TokenInterface
     }
 
     /**
-     * Add linebreak
+     * Add linebreak.
      *
-     * @param int $lineBreak
      * @return $this
-     * @throws InvalidArgumentException
      */
-    public function addLineBreak($lineBreak)
-    {
-        if (!is_int($lineBreak)) {
-            throw new InvalidArgumentException('integer', 0);
-        }
+    public function addLineBreak( int $lineBreak ): static {
 
         $this->lineBreaks[] = $lineBreak;
 

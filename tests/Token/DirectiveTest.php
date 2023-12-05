@@ -2,123 +2,106 @@
 /**
  * Created by PhpStorm.
  * Date: 03-12-2014
- * Time: 00:51
+ * Time: 00:51.
  */
 
-namespace Tivie\HtaccessParser\Token;
+namespace JazzMan\HtaccessParserTest\Token;
 
-use Tivie\HtaccessParser\TestCase\BaseTestCase;
+use JazzMan\HtaccessParser\Token\Directive;
+use JazzMan\HtaccessParser\Token\TokenInterface;
+use JazzMan\HtaccessParserTest\BaseTestCase;
+
 
 /**
- * Class DirectiveTest
+ * Class DirectiveTest.
  *
- * @covers \Tivie\HtaccessParser\Token\Directive
+ * @covers Directive
+ *
  * @author Estevão Soares dos Santos
+ *
+ * @property Directive $testClass
+ *
+ * @internal
  */
-class DirectiveTest extends BaseTestCase
-{
-    /**
-     * @var Directive
-     */
-    public $testClass;
+final class DirectiveTest extends BaseTestCase {
 
-    /**
-     * @var string
-     */
-    public $key = 'myDirective';
+    public string $key = 'myDirective';
 
-    public function setUp()
-    {
-        $this->testClass = new Directive($this->key);
+    protected function setUp(): void {
+        $this->testClass = new Directive( $this->key );
         parent::setUp();
     }
 
     /**
-     * @covers \Tivie\HtaccessParser\Token\Directive::getName
+     * @covers Directive::getName
      */
-    public function testGetName()
-    {
-        self::assertEquals($this->key, $this->testClass->getName());
+    public function testGetName(): void {
+        self::assertSame( $this->key, $this->testClass->getName() );
     }
 
     /**
-     * @covers \Tivie\HtaccessParser\Token\Directive::setName
+     * @covers Directive::setName
      */
-    public function testSetName()
-    {
-        $newKey = "myNewDIrective";
-        $this->testClass->setName($newKey);
+    public function testSetName(): void {
+        $newKey = 'myNewDIrective';
+        $this->testClass->setName( $newKey );
 
-        self::assertEquals($newKey, $this->testClass->getName());
+        self::assertSame( $newKey, $this->testClass->getName() );
     }
 
     /**
-     * @covers \Tivie\HtaccessParser\Token\Directive::getTokenType
+     * @covers Directive::getTokenType
      */
-    public function testGetTokenType()
-    {
-        self::assertEquals(TOKEN_DIRECTIVE, $this->testClass->getTokenType());
+    public function testGetTokenType(): void {
+        self::assertSame( TokenInterface::TOKEN_DIRECTIVE, $this->testClass->getTokenType() );
     }
 
     /**
-     * @covers \Tivie\HtaccessParser\Token\Directive::jsonSerialize
+     * @covers Directive::jsonSerialize
      */
-    public function testJsonSerialize()
-    {
+    public function testJsonSerialize(): void {
         $args = ['foo', 'bar', 'baz'];
-        $this->setProperty("arguments", $args);
+        $this->setProperty( 'arguments', $args );
 
-        $expectedOtp = json_encode($args);
-        self::assertEquals($expectedOtp, json_encode($this->testClass));
+        $expectedOtp = json_encode( $args );
+        self::assertSame( $expectedOtp, json_encode( $this->testClass ) );
 
     }
 
     /**
-     * @covers \Tivie\HtaccessParser\Token\Directive::__toString
+     * @covers Directive::__toString
      */
-    public function test__toString()
-    {
+    public function testToString(): void {
         $args = ['foo', 'bar', 'baz'];
-        $this->setProperty("arguments", $args);
+        $this->setProperty( 'arguments', $args );
 
         $expectedOtp = "{$this->key} foo bar baz";
-        self::assertEquals($expectedOtp, (string) $this->testClass, "Casting Directive to string does not produce the expected value");
+        self::assertSame( $expectedOtp, (string) $this->testClass, 'Casting Directive to string does not produce the expected value' );
     }
 
     /**
-     * @covers \Tivie\HtaccessParser\Token\Directive::setArguments
-     * @covers \Tivie\HtaccessParser\Token\Directive::getArguments
+     * @covers Directive::getArguments
+     * @covers Directive::setArguments
      */
-    public function testSetGetArguments()
-    {
-        $args = array('foo', 'bar', 'baz');
-        $this->testClass->setArguments($args);
-        self::assertEquals($args, $this->testClass->getArguments());
+    public function testSetGetArguments(): void {
+        $args = ['foo', 'bar', 'baz'];
+        $this->testClass->setArguments( ... $args );
+        self::assertSame( $args, $this->testClass->getArguments() );
     }
 
     /**
-     * @expectedException \Tivie\HtaccessParser\Exception\DomainException
+     * @covers Directive::addArgument
+     * @covers Directive::removeArgument
      */
-    public function testSetArgumentsExceptions()
-    {
-        $args = array('foo', new \StdClass());
-        $this->testClass->setArguments($args);
-    }
-
-    /**
-     * @covers \Tivie\HtaccessParser\Token\Directive::addArgument
-     * @covers \Tivie\HtaccessParser\Token\Directive::removeArgument
-     */
-    public function testAddRemoveArgument()
-    {
+    public function testAddRemoveArgument(): void {
         $arg = 'foo';
-        $this->testClass->addArgument($arg);
-        self::assertContains($arg, $this->testClass->getArguments(), "Argument was not added successfully");
+        $this->testClass->addArgument( $arg );
+        self::assertContains( $arg, $this->testClass->getArguments(), 'Argument was not added successfully' );
 
-        $this->testClass->removeArgument('bar');
-        self::assertContains($arg, $this->testClass->getArguments(), "Argument was removed indecently");
+        $this->testClass->removeArgument( 'bar' );
+        self::assertContains( $arg, $this->testClass->getArguments(), 'Argument was removed indecently' );
 
-        $this->testClass->removeArgument($arg);
-        self::assertNotContains($arg, $this->testClass->getArguments(), "Argument was not removed");
+        $this->testClass->removeArgument( $arg );
+        self::assertNotContains( $arg, $this->testClass->getArguments(), 'Argument was not removed' );
     }
 }

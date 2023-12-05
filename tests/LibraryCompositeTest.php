@@ -1,7 +1,7 @@
 <?php
 /**
  * -- PHP Htaccess Parser --
- * HtaccessContainerTest.php created at 06-12-2014
+ * HtaccessContainerTest.php created at 06-12-2014.
  *
  * Copyright 2014 Estevão Soares dos Santos
  *
@@ -16,44 +16,41 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- **/
+ */
 
-namespace Tivie\HtaccessParser;
+namespace JazzMan\HtaccessParserTest;
 
-use Tivie\HtaccessParser\TestCase\BaseTestCase;
+use JazzMan\HtaccessParser\Parser;
+use SplFileObject;
 
-class LibraryCompositeTest extends BaseTestCase
-{
-    /**
-     * @var Parser
-     */
-    public $testClass;
+/**
+ * @internal
+ *
+ * @coversNothing
+ *
+ * @property Parser $testClass
+ */
+final class LibraryCompositeTest extends BaseTestCase {
 
-    /**
-     * @var array
-     */
-    public $testCase = [];
+    public array $testCase = [];
 
-    /**
-     * @var integer
-     */
-    public $numberOfTests = 2;
+    public int $numberOfTests = 2;
 
-    public function setUp()
-    {
+    protected function setUp(): void {
         $this->testClass = new Parser();
         $max = $this->numberOfTests;
-        $basePath = __DIR__ . "/resources/testcase";
-        for ($i=1; $i <= $max; ++$i) {
-            $fname = "$basePath$i";
+        $basePath = __DIR__.'/resources/testcase';
+
+        for ( $i = 1; $i <= $max; ++$i ) {
+            $fname = "{$basePath}{$i}";
             $this->testCase[] = [
-                'file' => new \SplFileObject("$fname/htaccess"),
+                'file' => new SplFileObject( "{$fname}/htaccess" ),
                 'txt' => [
-                    0 => "$fname/txt/normal.txt",
-                    IGNORE_COMMENTS => "$fname/txt/no_comments.txt",
-                    IGNORE_WHITELINES => "$fname/txt/no_whitelines.txt",
-                    IGNORE_COMMENTS|IGNORE_WHITELINES => "$fname/txt/no_comments_no_whitelines.txt"
-                ]
+                    0 => "{$fname}/txt/normal.txt",
+                    Parser::IGNORE_COMMENTS => "{$fname}/txt/no_comments.txt",
+                    Parser::IGNORE_WHITELINES => "{$fname}/txt/no_whitelines.txt",
+                    Parser::IGNORE_COMMENTS | Parser::IGNORE_WHITELINES => "{$fname}/txt/no_comments_no_whitelines.txt",
+                ],
             ];
         }
 
@@ -61,35 +58,35 @@ class LibraryCompositeTest extends BaseTestCase
     }
 
     /**
-     * @covers \Tivie\HtaccessParser\Parser::setFile
-     * @covers \Tivie\HtaccessParser\Parser::ignoreComments
-     * @covers \Tivie\HtaccessParser\Parser::ignoreWhitelines
-     * @covers \Tivie\HtaccessParser\Parser::parse
-     * @covers \Tivie\HtaccessParser\HtaccessContainer::txtSerialize
-     * @covers \Tivie\HtaccessParser\HtaccessContainer::__toString
+     * @covers \HtaccessContainer::__toString
+     * @covers \HtaccessContainer::txtSerialize
+     * @covers \Parser::ignoreComments
+     * @covers \Parser::ignoreWhitelines
+     * @covers \Parser::parse
+     * @covers \Parser::setFile
      */
-    public function testCompareToExample()
-    {
-        for ($i=0; $i < $this->numberOfTests; ++$i) {
+    public function testCompareToExample(): void {
+        for ( $i = 0; $i < $this->numberOfTests; ++$i ) {
             $htaccessFile = $this->testCase[$i]['file'];
-            $this->testClass->setFile($htaccessFile);
+            $this->testClass->setFile( $htaccessFile );
 
             /**
-             * @var $type int
-             * @var $file \SplFileObject
+             * @var int           $type
+             * @var SplFileObject $file
              */
-            foreach ($this->testCase[$i]['txt'] as $type => $filename) {
-                $parsed = $this->testClass->setMode($type)->parse();
-                self::assertSame(file_get_contents($filename), $parsed->txtSerialize(), "Failed test (PARSE MODIFIED) with $filename");
+            foreach ( $this->testCase[$i]['txt'] as $type => $filename ) {
+                $parsed = $this->testClass->setMode( $type )->parse();
+                self::assertSame( file_get_contents( $filename ), $parsed->txtSerialize(), "Failed test (PARSE MODIFIED) with {$filename}" );
 
-                $parsed = $this->testClass->setMode(0)->parse();
+                $parsed = $this->testClass->setMode( 0 )->parse();
                 self::assertSame(
-                    file_get_contents($filename),
+                    file_get_contents( $filename ),
                     $parsed->txtSerialize(
                         4,
-                        (IGNORE_WHITELINES & $type),
-                        (IGNORE_COMMENTS & $type)),
-                    "Failed test with $filename"
+                        Parser::IGNORE_WHITELINES & $type,
+                        Parser::IGNORE_COMMENTS & $type
+                    ),
+                    "Failed test with {$filename}"
                 );
             }
         }

@@ -3,48 +3,42 @@
  * Created by PhpStorm.
  * User: Estevao
  * Date: 03-12-2014
- * Time: 10:59
+ * Time: 10:59.
  */
 
-namespace Tivie\HtaccessParser\TestCase;
+namespace JazzMan\HtaccessParserTest;
 
 use PHPUnit\Framework\TestCase;
+use ReflectionClass;
 
-abstract class BaseTestCase extends TestCase
-{
+abstract class BaseTestCase extends TestCase {
+
     protected $testClass;
 
-    /**
-     * @var \ReflectionClass
-     */
-    protected $reflection;
+    protected ReflectionClass $reflection;
 
-    public function setUp()
-    {
-        $this->reflection = new \ReflectionClass($this->testClass);
+    protected function setUp(): void {
+        $this->reflection = new ReflectionClass( $this->testClass );
     }
 
-    public function getMethod($method)
-    {
-        $method = $this->reflection->getMethod($method);
-        $method->setAccessible(true);
+    public function getMethod( $method ) {
+        $method = $this->reflection->getMethod( $method );
+        $method->setAccessible( true );
 
         return $method;
     }
 
-    public function getProperty($property)
-    {
-        $property = $this->reflection->getProperty($property);
-        $property->setAccessible(true);
+    public function getProperty( $property ) {
+        $property = $this->reflection->getProperty( $property );
+        $property->setAccessible( true );
 
-        return $property->getValue($this->testClass);
+        return $property->getValue( $this->testClass );
     }
 
-    public function setProperty($property, $value)
-    {
-        $property = $this->reflection->getProperty($property);
-        $property->setAccessible(true);
+    public function setProperty( $property, $value ): void {
+        $property = $this->reflection->getProperty( $property );
+        $property->setAccessible( true );
 
-        $property->setValue($this->testClass, $value);
+        $property->setValue( $this->testClass, $value );
     }
 }

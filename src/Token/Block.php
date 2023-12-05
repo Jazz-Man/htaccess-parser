@@ -1,7 +1,7 @@
 <?php
 /**
  * -- PHP Htaccess Parser --
- * Block.php created at 02-12-2014
+ * Block.php created at 02-12-2014.
  *
  * Copyright 2014 Estevão Soares dos Santos
  *
@@ -16,42 +16,37 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- **/
+ */
 
-namespace Tivie\HtaccessParser\Token;
+namespace JazzMan\HtaccessParser\Token;
 
-use Tivie\HtaccessParser\Exception\DomainException;
-use Tivie\HtaccessParser\Exception\InvalidArgumentException;
+use ArrayAccess;
+use ArrayIterator;
+use Countable;
+use DomainException;
+use InvalidArgumentException;
+use IteratorAggregate;
 use Traversable;
 
 /**
  * Class Block
- * A Token corresponding to a block (module) segment of .htaccess
+ * A Token corresponding to a block (module) segment of .htaccess.
  *
- * @package Tivie\HtaccessParser\Token
  * @copyright 2014 Estevão Soares dos Santos
  */
-class Block extends BaseToken implements \IteratorAggregate, \ArrayAccess, \Countable
-{
-    /**
-     * @var string
-     */
-    private $blockName;
+class Block extends BaseToken implements ArrayAccess, Countable, IteratorAggregate {
 
     /**
-     * @var array
+     * @var string[]
      */
-    private $arguments = array();
+    private array $arguments = [];
 
     /**
      * @var TokenInterface[]
      */
-    private $children = array();
+    private array $children = [];
 
-    /**
-     * @var int
-     */
-    private $indentation = 4;
+    private int $indentation = 4;
 
     /**
      * Create a new Block token.
@@ -62,70 +57,72 @@ class Block extends BaseToken implements \IteratorAggregate, \ArrayAccess, \Coun
      *    ...
      * </%blockName%>
      *
-     * @param string $blockName [optional] The name of the block
-     * @param string $argument [optional] The argument of the block
-     * @throws InvalidArgumentException
+     * @param string|null   $blockName [optional] The name of the block
+     * @param string[]|null $argument  [optional] The argument of the block
      */
-    public function __construct($blockName = null, $argument = null)
-    {
-        if ($blockName !== null) {
-            if (!is_string($blockName)) {
-                throw new InvalidArgumentException('string', 0);
-            } else {
-                $this->setName($blockName);
-            }
-        }
+    public function __construct( private ?string $blockName = null, ?string ...$argument ) {
 
-        if ($argument !== null) {
-            if (!is_array($argument)) {
-                $argument = array($argument);
-            }
-            $this->arguments = $argument;
+        if ( null !== $argument ) {
+            $this->setArguments( ...$argument );
         }
     }
 
     /**
-     * Set the block's name
+     * Get a string representation of this Token.
+     */
+    public function __toString(): string {
+
+        $ind = str_repeat(' ', $this->indentation);
+
+        // Opening tag
+        $str = '<'.$this->blockName;
+
+        // Arguments list
+        foreach ( $this->arguments as $arg ) {
+            $str .= " {$arg}";
+        }
+        $str .= '>'.PHP_EOL;
+
+        // Children
+        foreach ( $this->children as $child ) {
+            $str .= "{$ind}{$child}".PHP_EOL;
+        }
+
+        // Closing tag
+        $str .= "</{$this->blockName}>";
+
+        return $str;
+    }
+
+    /**
+     * Set the block's name.
      *
      * @param string $blockName [required] The name of the Block
+     *
      * @return $this
-     * @throws InvalidArgumentException
      */
-    public function setName($blockName)
-    {
-        if (!is_string($blockName)) {
-            throw new InvalidArgumentException('string', 0);
-        }
+    public function setName( string $blockName ): static {
+
         $this->blockName = $blockName;
 
         return $this;
     }
 
     /**
-     * Get the Token's name
-     *
-     * @return string
+     * Get the Token's name.
      */
-    public function getName()
-    {
+    public function getName(): string {
         return $this->blockName;
     }
 
     /**
-     * Set the block's arguments
+     * Set the block's arguments.
      *
-     * @param array $arguments [required] An array of arguments
+     * @param string[] $arguments [required] An array of arguments
+     *
      * @return $this
-     * @throws DomainException
      */
-    public function setArguments(array $arguments)
-    {
-        foreach ($arguments as $arg) {
-            if (!is_scalar($arg)) {
-                $type = gettype($arg);
-                throw new DomainException("Arguments array should be an array of scalar, but found $type");
-            }
-        }
+    public function setArguments( string ...$arguments ): static {
 
         $this->arguments = $arguments;
 
@@ -133,39 +130,31 @@ class Block extends BaseToken implements \IteratorAggregate, \ArrayAccess, \Coun
     }
 
     /**
-     * Get the block's arguments
-     *
-     * @return array
+     * Get the block's arguments.
      */
-    public function getArguments()
-    {
+    public function getArguments(): array {
         return $this->arguments;
     }
 
     /**
      * A helper method that returns a string corresponding to the Token's value
-     * (or its arguments concatenated)
-     *
-     * @return string
+     * (or its arguments concatenated).
      */
-    public function getValue()
-    {
-        return (implode(' ', $this->getArguments()));
+    public function getValue(): string {
+        return implode( ' ', $this->getArguments() );
     }
 
     /**
-     * Add an argument to the Block arguments array
+     * Add an argument to the Block arguments array.
      *
      * @param mixed $arg [required] A scalar
+     *
      * @return $this
-     * @throws InvalidArgumentException
      */
-    public function addArgument($arg)
+    public function addArgument( string $arg ): static
     {
-        if (!is_scalar($arg)) {
-            throw new InvalidArgumentException('scalar', 0);
-        }
-        if (!in_array($arg, $this->arguments)) {
+
+        if ( ! \in_array( $arg, $this->arguments, true ) ) {
             $this->arguments[] = $arg;
         }
 
@@ -173,177 +162,178 @@ class Block extends BaseToken implements \IteratorAggregate, \ArrayAccess, \Coun
     }
 
     /**
-     * Remove an argument from the Block arguments array
+     * Remove an argument from the Block arguments array.
      *
-     * @param string [required] $arg
      * @return $this
      */
-    public function removeArgument($arg)
-    {
-        if (($key = array_search($arg, $this->arguments)) !== false) {
-            unset($this->arguments[$key]);
+    public function removeArgument( string $arg ): static {
+        if ( false !== ( $key = array_search( $arg, $this->arguments, true ) ) ) {
+            unset( $this->arguments[$key] );
         }
 
         return $this;
     }
 
     /**
-     * Add a child to this block
+     * Add a child to this block.
      *
-     * @param TokenInterface $child
      * @return $this
      */
-    public function addChild(TokenInterface $child)
-    {
+    public function addChild( TokenInterface $child ): static {
         $this->children[] = $child;
 
         return $this;
     }
 
     /**
-     * Remove a child from this block
+     * Remove a child from this block.
      *
-     * @param TokenInterface $child [required] The child to remove
-     * @param bool $strict [optional] Default true. If the comparison should be strict. A non strict comparsion
-     *                                          will remove a child if it has the same properties with the same values
+     * @param TokenInterface $child  [required] The child to remove
+     * @param bool           $strict [optional] Default true. If the comparison should be strict. A non strict comparsion
+     *                               will remove a child if it has the same properties with the same values
+     *
      * @return $this
      */
-    public function removeChild(TokenInterface $child, $strict = true)
-    {
-        $index = array_search($child, $this->children, !!$strict);
+    public function removeChild( TokenInterface $child, bool $strict = true ): static {
+        $index = array_search( $child, $this->children, $strict);
 
-        if ($index !== false) {
-            unset($this->children[$index]);
+        if ( false !== $index ) {
+            unset( $this->children[$index] );
         }
 
         return $this;
     }
 
     /**
-     * Check if Block has children
-     *
-     * @return bool
+     * Check if Block has children.
      */
-    public function hasChildren()
-    {
-        return ($this->count() > 0);
+    public function hasChildren(): bool {
+        return $this->count() > 0;
     }
 
     /**
-     * Retrieve an external iterator
-     * @link http://php.net/manual/en/iteratoraggregate.getiterator.php
+     * Retrieve an external iterator.
+     *
+     * @see http://php.net/manual/en/iteratoraggregate.getiterator.php
+     *
      * @return Traversable An instance of an object implementing <b>Iterator</b> or
-     * <b>Traversable</b>
+     *                     <b>Traversable</b>
      */
-    public function getIterator()
-    {
-        return new \ArrayIterator($this->children);
+    public function getIterator(): Traversable {
+        return new ArrayIterator( $this->children );
     }
 
     /**
      * (PHP 5 &gt;= 5.0.0)<br/>
-     * Whether a offset exists
-     * @link http://php.net/manual/en/arrayaccess.offsetexists.php
+     * Whether a offset exists.
+     *
+     * @see http://php.net/manual/en/arrayaccess.offsetexists.php
+     *
      * @param mixed $offset <p>
-     * An offset to check for.
-     * </p>
-     * @return boolean true on success or false on failure.
-     * </p>
-     * <p>
-     * The return argument will be casted to boolean if non-boolean was returned.
+     *                      An offset to check for.
+     *                      </p>
+     *
+     * @return bool true on success or false on failure.
+     *              </p>
+     *              <p>
+     *              The return argument will be casted to boolean if non-boolean was returned.
      */
-    public function offsetExists($offset)
-    {
-        if (!is_scalar($offset)) {
-            throw new \InvalidArgumentException("Offset must be a scalar");
+    public function offsetExists( mixed $offset ): bool {
+        if ( ! \is_scalar( $offset ) ) {
+            throw new InvalidArgumentException( 'Offset must be a scalar' );
         }
-        return isset($this->children[$offset]);
+
+        return isset( $this->children[$offset] );
     }
 
     /**
-     * Offset to retrieve
+     * Offset to retrieve.
      *
-     * @link http://php.net/manual/en/arrayaccess.offsetget.php
-     * @param mixed $offset The offset to retrieve.
-     * @return mixed Can return all argument types.
+     * @see http://php.net/manual/en/arrayaccess.offsetget.php
+     *
+     * @param mixed $offset the offset to retrieve
+     *
+     * @return mixed can return all argument types
+     *
      * @throws InvalidArgumentException
      */
-    public function offsetGet($offset)
-    {
-        if (!is_scalar($offset)) {
-            throw new InvalidArgumentException('scalar', 0);
+    public function offsetGet( mixed $offset ): mixed {
+        if ( ! \is_scalar( $offset ) ) {
+            throw new InvalidArgumentException( 'scalar', 0 );
         }
-        if (!$this->offsetExists($offset)) {
-            throw new \DomainException("$offset is not set");
+
+        if ( ! $this->offsetExists( $offset ) ) {
+            throw new DomainException( "{$offset} is not set" );
         }
+
         return $this->children[$offset];
     }
 
     /**
-     * Offset to set
+     * Offset to set.
      *
-     * @link http://php.net/manual/en/arrayaccess.offsetset.php
-     * @param mixed $offset The offset to assign the argument to.
-     * @param mixed $argument The argument to set.
+     * @see http://php.net/manual/en/arrayaccess.offsetset.php
+     *
+     * @param mixed $offset the offset to assign the argument to
+     * @param mixed $value  the argument to set
+     *
      * @throws InvalidArgumentException
      */
-    public function offsetSet($offset, $argument)
-    {
-        if (!is_null($offset) && !is_scalar($offset)) {
-            throw new InvalidArgumentException('scalar', 0);
+    public function offsetSet( mixed $offset, mixed $value ): void {
+        if ( null !== $offset && ! \is_scalar( $offset ) ) {
+            throw new InvalidArgumentException( 'scalar', 0 );
         }
 
-        if (!$argument instanceof TokenInterface) {
-            throw new InvalidArgumentException('TokenInterface', 1);
+        if ( ! $value instanceof TokenInterface ) {
+            throw new InvalidArgumentException( 'TokenInterface', 1 );
         }
 
-        if (!in_array($argument, $this->children)) {
-            $this->children[$offset] = $argument;
+        if ( ! \in_array( $value, $this->children, true ) ) {
+            $this->children[$offset] = $value;
         }
     }
 
     /**
-     * Offset to unset
+     * Offset to unset.
      *
-     * @link http://php.net/manual/en/arrayaccess.offsetunset.php
-     * @param mixed $offset The offset to unset.
-     * @return void
+     * @see http://php.net/manual/en/arrayaccess.offsetunset.php
+     *
+     * @param mixed $offset the offset to unset
      */
-    public function offsetUnset($offset)
-    {
-        if (!is_scalar($offset)) {
-            throw new \InvalidArgumentException("Offset must be a scalar");
+    public function offsetUnset( mixed $offset ): void {
+        if ( ! \is_scalar( $offset ) ) {
+            throw new InvalidArgumentException( 'Offset must be a scalar' );
         }
-        unset($this->children[$offset]);
+        unset( $this->children[$offset] );
     }
 
     /**
-     * Count elements of an object
+     * Count elements of an object.
      *
-     * @link http://php.net/manual/en/countable.count.php
+     * @see http://php.net/manual/en/countable.count.php
+     *
      * @return int The custom count as an integer. The return argument is cast to an integer.
      */
-    public function count()
-    {
-        return count($this->children);
+    public function count(): int {
+        return \count( $this->children );
     }
 
     /**
-     * Return an array ready for serialization. Ignores comments and whitelines
+     * Return an array ready for serialization. Ignores comments and whitelines.
      *
-     * @link http://php.net/manual/en/jsonserializable.jsonserialize.php
+     * @see http://php.net/manual/en/jsonserializable.jsonserialize.php
+     *
      * @return mixed data which can be serialized by <b>json_encode</b>,
-     * which is a argument of any type other than a resource.
+     *               which is a argument of any type other than a resource
      */
-    function jsonSerialize()
-    {
+    public function jsonSerialize(): mixed {
         $array = [
             'arguments' => $this->arguments,
-            'children' => array()
+            'children' => [],
         ];
 
-        foreach ($this->children as $child) {
-            if (!$child instanceof WhiteLine & !$child instanceof Comment) {
+        foreach ( $this->children as $child ) {
+            if ( ! $child instanceof WhiteLine & ! $child instanceof Comment ) {
                 $array['children'][$child->getName()] = $child->jsonSerialize();
             }
         }
@@ -352,17 +342,13 @@ class Block extends BaseToken implements \IteratorAggregate, \ArrayAccess, \Coun
     }
 
     /**
-     * Sets the indentation level
+     * Sets the indentation level.
      *
-     * @param integer $spaces [required] The number of spaces to indent lines when outputting to string
+     * @param int $spaces [required] The number of spaces to indent lines when outputting to string
+     *
      * @return $this
-     * @throws InvalidArgumentException
      */
-    public function setIndentation($spaces)
-    {
-        if (!is_int($spaces)) {
-            throw new InvalidArgumentException('integer', 0);
-        }
+    public function setIndentation( int $spaces ): static {
 
         $this->indentation = $spaces;
 
@@ -370,63 +356,27 @@ class Block extends BaseToken implements \IteratorAggregate, \ArrayAccess, \Coun
     }
 
     /**
-     * Get a string representation of this Token
-     *
-     * @return string
+     * Get the Token's type.
      */
-    public function __toString()
-    {
-        $ind = '';
-        for ($i = 0; $i < $this->indentation; ++$i) {
-            $ind .= ' ';
-        }
-
-        //Opening tag
-        $str = "<" . $this->blockName;
-        // Arguments list
-        foreach ($this->arguments as $arg) {
-            $str .= " $arg";
-        }
-        $str .= '>' . PHP_EOL;
-
-        //Children
-        foreach ($this->children as $child) {
-            $str .= "$ind$child" . PHP_EOL;
-        }
-
-        //Closing tag
-        $str .= "</{$this->blockName}>";
-
-        return $str;
+    public function getTokenType(): int {
+        return TokenInterface::TOKEN_BLOCK;
     }
 
     /**
-     * Get the Token's type
-     *
-     * @return int
+     * Get the array representation of the Token.
      */
-    public function getTokenType()
-    {
-        return TOKEN_BLOCK;
-    }
-
-    /**
-     * Get the array representation of the Token
-     *
-     * @return array
-     */
-    public function toArray()
-    {
+    public function toArray(): array {
         $array = [
-            'type'      => $this->getTokenType(),
-            'name'      => $this->getName(),
+            'type' => $this->getTokenType(),
+            'name' => $this->getName(),
             'arguments' => $this->getArguments(),
-            'children'  => array()
+            'children' => [],
         ];
 
-        foreach ($this->children as $child) {
+        foreach ( $this->children as $child ) {
             $array['children'][] = $child->toArray();
         }
+
         return $array;
     }
 }

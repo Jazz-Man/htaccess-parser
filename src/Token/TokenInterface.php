@@ -1,7 +1,7 @@
 <?php
 /**
  * -- PHP Htaccess Parser --
- * TokenInterface.php created at 02-12-2014
+ * TokenInterface.php created at 02-12-2014.
  *
  * Copyright 2014 Estevão Soares dos Santos
  *
@@ -16,102 +16,86 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- **/
+ */
 
-namespace Tivie\HtaccessParser\Token;
-
-const TOKEN_DIRECTIVE = 0;
-const TOKEN_BLOCK = 1;
-const TOKEN_COMMENT = 2;
-const TOKEN_WHITELINE = 3;
+namespace JazzMan\HtaccessParser\Token;
 
 use JsonSerializable;
 
 /**
  * Interface TokenInterface
- * An Interface for Tokens to implement
+ * An Interface for Tokens to implement.
  *
- * @package Tivie\HtaccessParser\Token
  * @copyright 2014 Estevão Soares dos Santos
  */
-interface TokenInterface extends JsonSerializable
-{
-    /**
-     * Get the Token's type
-     *
-     * @return int
-     */
-    public function getTokenType();
+interface TokenInterface extends JsonSerializable {
+
+    public const TOKEN_DIRECTIVE = 0;
+    public const TOKEN_BLOCK = 1;
+    public const TOKEN_COMMENT = 2;
+    public const TOKEN_WHITELINE = 3;
 
     /**
-     * Get the Token's name
-     *
-     * @return string
+     * Get a string representation of the Token.
      */
-    public function getName();
+    public function __toString(): string;
 
     /**
-     * Get the Token's arguments
-     *
-     * @return array
+     * Get the Token's type.
      */
-    public function getArguments();
+    public function getTokenType(): int;
 
     /**
-     * Set the Token's arguments
+     * Get the Token's name.
+     */
+    public function getName(): string;
+
+    /**
+     * Get the Token's arguments.
+     */
+    public function getArguments(): array;
+
+    /**
+     * Set the Token's arguments.
      *
-     * @param array $arguments
      * @return $this
      */
-    public function setArguments(array $arguments);
+    public function setArguments( string ... $arguments ): static;
 
     /**
      * A helper method that returns a string corresponding to the Token's value
-     * (or its arguments concatenated)
-     *
-     * @return string
+     * (or its arguments concatenated).
      */
-    public function getValue();
+    public function getValue(): string;
 
     /**
-     * Check if this Token spawns across multiple lines
-     *
-     * @return bool
+     * Check if this Token spawns across multiple lines.
      */
-    public function isMultiLine();
+    public function isMultiLine(): bool;
 
     /**
-     * Get the line breaks
+     * Get the line breaks.
      *
      * @return int[]
      */
-    public function getLineBreaks();
+    public function getLineBreaks(): array;
 
     /**
-     * Set the line breaks
+     * Set the line breaks.
      *
      * @param int[] $lineBreaks Array of integers
+     *
      * @return $this
      */
-    public function setLineBreaks(array $lineBreaks);
+    public function setLineBreaks( int ...$lineBreaks ): static;
 
     /**
-     * @param integer $lineBreak
      * @return $this
      */
-    public function addLineBreak($lineBreak);
+    public function addLineBreak( int $lineBreak ): static;
 
     /**
-     * Get a string representation of the Token
-     *
-     * @return string
+     * Get the array representation of the Token.
      */
-    public function __toString();
-
-    /**
-     * Get the array representation of the Token
-     *
-     * @return array
-     */
-    public function toArray();
+    public function toArray(): array;
 }

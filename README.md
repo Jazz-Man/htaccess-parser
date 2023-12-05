@@ -56,7 +56,7 @@ Using PHP Htaccess Parser is very simple.
 
 ```php
 $file = new \SplFileObject('path/to/.htaccess');
-$parser = new \Tivie\HtaccessParser\Parser();
+$parser = new \JazzMan\HtaccessParser\Parser();
 $htaccess = $parser->parse($file);
 ```
 You can then use `$htaccess` to manipulate .htaccess contents.
@@ -87,7 +87,7 @@ file_put_content('.htaccess', $htaccess);
 The [Parser class](https://github.com/tivie/php-htaccess-parser/blob/master/src/Parser.php) is the main component of the library. Since it's constructor doesn't require any mandatory argument, initializing a Parser object is very simple:
 
 ```php
-$parser = new \Tivie\HtaccessParser\Parser();
+$parser = new \JazzMan\HtaccessParser\Parser();
 ```
 
 ### Parser Options

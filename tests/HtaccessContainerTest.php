@@ -1,7 +1,7 @@
 <?php
 /**
  * -- PHP Htaccess Parser --
- * HtaccessContainerTest.php created at 05-12-2014
+ * HtaccessContainerTest.php created at 05-12-2014.
  *
  * Copyright 2014 Estevão Soares dos Santos
  *
@@ -16,115 +16,116 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- **/
+ */
 
-namespace Tivie\HtaccessParser;
+namespace JazzMan\HtaccessParserTest;
 
-use Tivie\HtaccessParser\TestCase\BaseTestCase;
+use Exception;
+use InvalidArgumentException;
+use JazzMan\HtaccessParser\HtaccessContainer;
+use JazzMan\HtaccessParser\Token\Block;
+use JazzMan\HtaccessParser\Token\Comment;
+use JazzMan\HtaccessParser\Token\Directive;
+use JazzMan\HtaccessParser\Token\TokenInterface;
+use JazzMan\HtaccessParser\Token\WhiteLine;
+use PHPUnit\Framework\MockObject\MockObject;
 
-const TOKEN_DIRECTIVE = 0;
-const TOKEN_BLOCK = 1;
-const TOKEN_COMMENT = 2;
-const TOKEN_WHITELINE = 3;
+/**
+ * @internal
+ *
+ * @coversNothing
+ *
+ * @property HtaccessContainer $testClass
+ */
+final class HtaccessContainerTest extends BaseTestCase {
 
-class HtaccessContainerTest extends BaseTestCase
-{
+    public TokenInterface $genericToken;
 
-    /**
-     * @var HtaccessContainer
-     */
-    public $testClass;
-
-    /**
-     * @var \Tivie\HtaccessParser\Token\TokenInterface
-     */
-    public $genericToken;
-
-    public function setUp()
-    {
+    protected function setUp(): void {
         $this->testClass = new HtaccessContainer();
         $this->genericToken = $this->createTokenMock();
         parent::setUp();
     }
 
     /**
-     * @covers \Tivie\HtaccessParser\HtaccessContainer::offsetSet
+     * @covers \HtaccessContainer::offsetSet
      */
-    public function testOffsetSet()
-    {
+    public function testOffsetSet(): void {
         $htaccess = new HtaccessContainer();
-        $token = $this->createTokenMock(1);
-        $htaccess->offsetSet(null, $token);
-        self::assertContains($token, $htaccess);
-        self::assertSame($token, $htaccess[0]);
+        $token = $this->createTokenMock( 1 );
+        $htaccess->offsetSet( null, $token );
+        self::assertContains( $token, $htaccess );
+        self::assertSame( $token, $htaccess[0] );
 
         $token = $this->createTokenMock();
         $htaccess[] = $token;
-        self::assertContains($token, $htaccess);
-        self::assertSame($token, $htaccess[1]);
-
+        self::assertContains( $token, $htaccess );
+        self::assertSame( $token, $htaccess[1] );
 
         $htaccess = new HtaccessContainer();
-        $htaccess->offsetSet(5, $token);
-        self::assertSame($token, $htaccess[5]);
+        $htaccess->offsetSet( 5, $token );
+        self::assertSame( $token, $htaccess[5] );
 
-        $token = $this->createTokenMock(2);
+        $token = $this->createTokenMock( 2 );
         $htaccess[5] = $token;
-        self::assertContains($token, $htaccess);
-        self::assertSame($token, $htaccess[5]);
+        self::assertContains( $token, $htaccess );
+        self::assertSame( $token, $htaccess[5] );
     }
 
     /**
-     * @covers \Tivie\HtaccessParser\HtaccessContainer::offsetSet
-     * @covers \Tivie\HtaccessParser\Exception\InvalidArgumentException
-     * @expectedException \Tivie\HtaccessParser\Exception\InvalidArgumentException
+     * @covers \HtaccessContainer::offsetSet
+     * @covers \InvalidArgumentException
      */
-    public function testOffsetSet2()
-    {
+    public function testOffsetSet2(): void {
+        $this->expectException( InvalidArgumentException::class );
         $this->testClass[] = 'foobar';
     }
 
     /**
-     * @covers \Tivie\HtaccessParser\HtaccessContainer::offsetSet
-     * @covers \Tivie\HtaccessParser\Exception\InvalidArgumentException
-     * @expectedException \Tivie\HtaccessParser\Exception\InvalidArgumentException
+     * @covers \HtaccessContainer::offsetSet
+     * @covers \InvalidArgumentException
      */
-    public function testOffsetSet3()
-    {
+    public function testOffsetSet3(): void {
+        $this->expectException( InvalidArgumentException::class );
         $this->testClass['foo'] = $this->createTokenMock();
     }
 
     /**
-     * @covers \Tivie\HtaccessParser\HtaccessContainer::search
+     * @covers \HtaccessContainer::search
      */
-    public function testSearch()
-    {
+    public function testSearch(): void {
         $this->testClass[] = $this->createTokenMock();
         $this->testClass[] = $this->createTokenMock();
 
-        $mock = $this->getMockBuilder('\Tivie\HtaccessParser\Token\Block')
-                                  ->setMethods(['getName', 'getTokenType', 'hasChildren'])
-                                  ->getMock();
+        $mock = $this->getMockBuilder( Block::class )
+            ->onlyMethods( ['getName', 'getTokenType', 'hasChildren'] )
+            ->getMock()
+        ;
 
-        $mock->expects($this->any())
-             ->method('getName')
-             ->will($this->returnValue('fooBlock'));
+        $mock->expects( self::any() )
+            ->method( 'getName' )
+            ->willReturn( 'fooBlock' )
+        ;
 
-        $mock->expects($this->any())
-             ->method('getTokenType')
-             ->will($this->returnValue(TOKEN_BLOCK));
+        $mock->expects( self::any() )
+            ->method( 'getTokenType' )
+            ->willReturn( TokenInterface::TOKEN_BLOCK )
+        ;
 
-        $mock->expects($this->any())
-             ->method('hasChildren')
-             ->will($this->returnValue(TRUE));
+        $mock->expects( self::any() )
+            ->method( 'hasChildren' )
+            ->willReturn( true )
+        ;
 
-        $mockChild = $this->getMockBuilder('\Tivie\HtaccessParser\Token\Directive')
-             ->setMethods(['getName', 'getTokenType'])
-             ->getMock();
+        $mockChild = $this->getMockBuilder( Directive::class )
+            ->onlyMethods( ['getName', 'getTokenType'] )
+            ->getMock()
+        ;
 
-        $mockChild->expects($this->any())
-             ->method('getName')
-             ->will($this->returnValue('fooDirective'));
+        $mockChild->expects( self::any() )
+            ->method( 'getName' )
+            ->willReturn( 'fooDirective' )
+        ;
 
         $mock[] = $this->testClass[] = $this->createTokenMock();
         $mock[] = $this->testClass[] = $this->createTokenMock();
@@ -132,66 +133,66 @@ class HtaccessContainerTest extends BaseTestCase
 
         $this->testClass[] = $mock;
 
-        self::assertSame($mock, $this->testClass->search('fooBlock', TOKEN_BLOCK, true), "Search method failed to return the correct token");
-        self::assertSame($mockChild, $this->testClass->search('fooDirective', null, true), "Search method failed to return the correct token");
+        self::assertSame( $mock, $this->testClass->search( 'fooBlock', TokenInterface::TOKEN_BLOCK ), 'Search method failed to return the correct token' );
+        self::assertSame( $mockChild, $this->testClass->search( 'fooDirective' ), 'Search method failed to return the correct token' );
     }
 
     /**
-     * @covers \Tivie\HtaccessParser\HtaccessContainer::slice
+     * @covers \HtaccessContainer::slice
      */
-    public function testSlice()
-    {
-        $htaccess = $this->fillContainer($this->testClass, 6, true);
+    public function testSlice(): void {
+        $htaccess = $this->fillContainer( $this->testClass, 6, true );
 
         $offset = 2;
+
         $length = 3;
+
         $presKeys = false;
 
         $array = $htaccess->getArrayCopy();
-        $expArr = array_slice($array, $offset, $length, $presKeys);
-        $expObj = new HtaccessContainer($expArr);
+        $expArr = \array_slice( $array, $offset, $length, $presKeys );
 
-        self::assertSame($expArr, $htaccess->slice($offset, $length, $presKeys, true));
-        self::assertEquals($expObj, $htaccess->slice($offset, $length, $presKeys, false));
+        $expObj = new HtaccessContainer( $expArr );
+
+        self::assertSame( $expArr, $htaccess->slice( $offset, $length, $presKeys, true ) );
+        self::assertEquals( $expObj, $htaccess->slice( $offset, $length, $presKeys ) );
     }
 
-
     /**
-     * @covers \Tivie\HtaccessParser\HtaccessContainer::splice
+     * @covers \HtaccessContainer::splice
      */
-    public function testSplice()
-    {
+    public function testSplice(): void {
         $tokenM1 = $this->genericToken;
-        $tokenM2 = $this->createTokenMock(TOKEN_BLOCK);
-        $htaccess = $this->fillContainer($this->testClass);
+        $tokenM2 = $this->createTokenMock( TokenInterface::TOKEN_BLOCK );
+        $htaccess = $this->fillContainer( $this->testClass );
         $array = [$tokenM2, $tokenM2, $tokenM2];
-        $max = count($htaccess);
-        $spliced = $htaccess->splice(1, $max, $array);
+        $max = \count( $htaccess );
+        $spliced = $htaccess->splice( 1, $max, $array );
 
-        self::assertSame($tokenM1, $htaccess[0]);
-        self::assertNotSame($tokenM1, $htaccess[1]);
-        self::assertNotSame($tokenM1, $htaccess[2]);
-        self::assertNotSame($tokenM1, $htaccess[3]);
+        self::assertSame( $tokenM1, $htaccess[0] );
+        self::assertNotSame( $tokenM1, $htaccess[1] );
+        self::assertNotSame( $tokenM1, $htaccess[2] );
+        self::assertNotSame( $tokenM1, $htaccess[3] );
 
-        self::assertNotSame($tokenM2, $htaccess[0]);
-        self::assertSame($tokenM2, $htaccess[1]);
-        self::assertSame($tokenM2, $htaccess[2]);
-        self::assertSame($tokenM2, $htaccess[3]);
+        self::assertNotSame( $tokenM2, $htaccess[0] );
+        self::assertSame( $tokenM2, $htaccess[1] );
+        self::assertSame( $tokenM2, $htaccess[2] );
+        self::assertSame( $tokenM2, $htaccess[3] );
 
         $expReturn = [];
-        for ($i=0;$i<$max-1;++$i) {
+
+        for ( $i = 0; $max - 1 > $i; ++$i ) {
             $expReturn[] = $tokenM1;
         }
-        self::assertSame($expReturn, $spliced);
+        self::assertSame( $expReturn, $spliced );
     }
 
     /**
-     * @covers \Tivie\HtaccessParser\HtaccessContainer::insertAt
+     * @covers \HtaccessContainer::insertAt
      */
-    public function testInsertAt()
-    {
-        $tokenM1 = $this->createTokenMock(null);
-        $testToken = $this->createTokenMock(TOKEN_DIRECTIVE);
+    public function testInsertAt(): void {
+        $tokenM1 = $this->createTokenMock();
+        $testToken = $this->createTokenMock( TokenInterface::TOKEN_DIRECTIVE );
 
         $htaccess = $this->testClass;
         $htaccess[0] = $tokenM1;
@@ -199,21 +200,22 @@ class HtaccessContainerTest extends BaseTestCase
         $htaccess[2] = $tokenM1;
         $htaccess[3] = $tokenM1;
 
-        $htaccess->insertAt(2, $testToken);
+        $htaccess->insertAt( 2, $testToken );
 
-
-        self::assertContains($testToken, $htaccess, "Token was not inserted in HtaccessContainer object");
-        self::assertSame($testToken, $htaccess[2], "Token was not inserted in HtaccessContainer at the correc index");
-        self::assertNotSame($tokenM1, $htaccess[2], "Failed asserting that TestToken is different from tokenM1");
+        self::assertContains( $testToken, $htaccess, 'Token was not inserted in HtaccessContainer object' );
+        self::assertSame( $testToken, $htaccess[2], 'Token was not inserted in HtaccessContainer at the correc index' );
+        self::assertNotSame( $tokenM1, $htaccess[2], 'Failed asserting that TestToken is different from tokenM1' );
     }
 
-    protected function fillContainer($htaccess = null, $num = 6, $rand = false)
-    {
-        $htaccess = ($htaccess) ? $htaccess : $this->testClass;
+    protected function fillContainer( $htaccess = null, int $num = 6, bool $rand = false ) {
+        $htaccess = ( $htaccess ) ?: $this->testClass;
 
-        for($i=0;$i<$num;++$i) {
-            if ($rand) {
-                $htaccess[] = $this->createTokenMock(mt_rand(0,4));
+        for ( $i = 0; $i < $num; ++$i ) {
+            if ( $rand ) {
+                try {
+                    $htaccess[] = $this->createTokenMock( random_int( 0, 4 ) );
+                } catch ( Exception $e ) {
+                }
             } else {
                 $htaccess[] = $this->genericToken;
             }
@@ -222,34 +224,25 @@ class HtaccessContainerTest extends BaseTestCase
         return $htaccess;
     }
 
-    protected function createTokenMock($type = null)
-    {
-        switch($type) {
-            case TOKEN_DIRECTIVE:
-                return $this->getMockBuilder('\Tivie\HtaccessParser\Token\Directive')
-                            ->setMethods([])
-                            ->getMock();
-                break;
-            case TOKEN_BLOCK:
-                return $this->getMockBuilder('\Tivie\HtaccessParser\Token\Block')
-                            ->setMethods([])
-                            ->getMock();
-                break;
-            case TOKEN_COMMENT:
-                return $this->getMockBuilder('\Tivie\HtaccessParser\Token\Comment')
-                            ->setMethods([])
-                            ->getMock();
-                break;
-            case TOKEN_WHITELINE:
-                return $this->getMockBuilder('\Tivie\HtaccessParser\Token\WhiteLine')
-                            ->setMethods([])
-                            ->getMock();
-                break;
-            default:
-                return $this->getMockBuilder('\Tivie\HtaccessParser\Token\TokenInterface')
-                            ->setMethods([])
-                            ->getMock();
-        }
-    }
+    protected function createTokenMock( ?int $type = null ): Block|Comment|Directive|MockObject|TokenInterface|WhiteLine {
 
+        if ( null === $type ) {
+            return $this->getMockBuilder( TokenInterface::class )
+                ->getMock()
+            ;
+        }
+
+        return match ( $type ) {
+            TokenInterface::TOKEN_DIRECTIVE => $this->getMockBuilder( Directive::class )
+                ->getMock(),
+            TokenInterface::TOKEN_BLOCK => $this->getMockBuilder( Block::class )
+                ->getMock(),
+            TokenInterface::TOKEN_COMMENT => $this->getMockBuilder( Comment::class )
+                ->getMock(),
+            TokenInterface::TOKEN_WHITELINE => $this->getMockBuilder( WhiteLine::class )
+                ->getMock(),
+            default => $this->getMockBuilder( TokenInterface::class )
+                ->getMock()
+        };
+    }
 }
