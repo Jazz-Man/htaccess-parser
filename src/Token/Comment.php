@@ -20,6 +20,8 @@
 
 namespace JazzMan\HtaccessParser\Token;
 
+use Stringable;
+
 /**
  * Class Comment
  * A Token corresponding to a comment segment of .htaccess.
@@ -121,7 +123,7 @@ class Comment extends BaseToken {
      *
      * @return $this
      */
-    public function setArguments( string ...$arguments ): static {
+    public function setArguments( string|Stringable ...$arguments ): static {
         $this->setText( $arguments[0] );
 
         return $this;

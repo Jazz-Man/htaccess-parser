@@ -26,6 +26,7 @@ use Countable;
 use DomainException;
 use InvalidArgumentException;
 use IteratorAggregate;
+use Stringable;
 use Traversable;
 
 /**
@@ -60,7 +61,7 @@ class Block extends BaseToken implements ArrayAccess, Countable, IteratorAggrega
      * @param string|null   $blockName [optional] The name of the block
      * @param string[]|null $argument  [optional] The argument of the block
      */
-    public function __construct( private ?string $blockName = null, ?string ...$argument ) {
+    public function __construct( private ?string $blockName = null, string|Stringable|null ...$argument ) {
 
         if ( null !== $argument ) {
             $this->setArguments( ...$argument );
@@ -72,7 +73,7 @@ class Block extends BaseToken implements ArrayAccess, Countable, IteratorAggrega
      */
     public function __toString(): string {
 
-        $ind = str_repeat(' ', $this->indentation);
+        $ind = str_repeat( ' ', $this->indentation );
 
         // Opening tag
         $str = '<'.$this->blockName;
@@ -122,7 +123,7 @@ class Block extends BaseToken implements ArrayAccess, Countable, IteratorAggrega
      *
      * @return $this
      */
-    public function setArguments( string ...$arguments ): static {
+    public function setArguments( string|Stringable ...$arguments ): static {
 
         $this->arguments = $arguments;
 
@@ -151,8 +152,7 @@ class Block extends BaseToken implements ArrayAccess, Countable, IteratorAggrega
      *
      * @return $this
      */
-    public function addArgument( string $arg ): static
-    {
+    public function addArgument( string $arg ): static {
 
         if ( ! \in_array( $arg, $this->arguments, true ) ) {
             $this->arguments[] = $arg;
@@ -195,7 +195,7 @@ class Block extends BaseToken implements ArrayAccess, Countable, IteratorAggrega
      * @return $this
      */
     public function removeChild( TokenInterface $child, bool $strict = true ): static {
-        $index = array_search( $child, $this->children, $strict);
+        $index = array_search( $child, $this->children, $strict );
 
         if ( false !== $index ) {
             unset( $this->children[$index] );

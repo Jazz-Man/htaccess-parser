@@ -21,6 +21,7 @@
 namespace JazzMan\HtaccessParser\Token;
 
 use JsonSerializable;
+use Stringable;
 
 /**
  * Interface TokenInterface
@@ -60,7 +61,7 @@ interface TokenInterface extends JsonSerializable {
      *
      * @return $this
      */
-    public function setArguments( string ... $arguments ): static;
+    public function setArguments( string|Stringable ...$arguments ): static;
 
     /**
      * A helper method that returns a string corresponding to the Token's value

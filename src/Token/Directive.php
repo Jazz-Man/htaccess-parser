@@ -23,6 +23,8 @@ declare( strict_types=1 );
 
 namespace JazzMan\HtaccessParser\Token;
 
+use Stringable;
+
 /**
  * Class Directive
  * A Token corresponding to a directive segment of htaccess.
@@ -37,7 +39,7 @@ class Directive extends BaseToken {
      * @param string|null $name      [optional]
      * @param array       $arguments [optional]
      */
-    public function __construct( private ?string $name = null, string ...$arguments ) {
+    public function __construct( private ?string $name = null, string|Stringable ...$arguments ) {
 
         foreach ( $arguments as $arg ) {
 
@@ -85,7 +87,7 @@ class Directive extends BaseToken {
      *
      * @return $this
      */
-    public function setArguments( string ...$arguments ): static {
+    public function setArguments( string|Stringable ...$arguments ): static {
         foreach ( $arguments as $arg ) {
 
             $this->addArgument( $arg );

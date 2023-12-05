@@ -20,6 +20,8 @@
 
 namespace JazzMan\HtaccessParser\Token;
 
+use Stringable;
+
 /**
  * Class WhiteLine
  * A Token corresponding to a white line (blank line) segment of .htaccess.
@@ -83,7 +85,7 @@ class WhiteLine extends BaseToken {
      *
      * @return $this
      */
-    public function setArguments( string ...$arguments ): static {
+    public function setArguments( string|Stringable ...$arguments ): static {
         return $this;
     }
 
